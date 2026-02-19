@@ -1,8 +1,18 @@
-# Docker & Postgres
-pgdata/
+# Ambienti virtuali
+venv/
+.venv/
+env/
 
-# Segreti (Obbligatorio!)
+# Cache di Python
+__pycache__/
+*.pyc
+
+# Segreti e configurazioni locali
 .env
 
-# Sistema operativo
+# Dati del Database (se mappati localmente)
+pgdata/
+
+# File di sistema
 .DS_Store
+Thumbs.db

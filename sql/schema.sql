@@ -16,8 +16,36 @@ CREATE TABLE IF NOT EXISTS close_approaches (
     velocity_km_s REAL NOT NULL,             -- Corrisponde al campo NASA 'v_rel'
     
     -- Definiamo il legame tra le due tabelle
-    CONSTRAINT fk_asteroid
-        FOREIGN KEY(asteroid_id)
-        REFERENCES asteroids(id)
-        ON DELETE CASCADE
+    FOREIGN KEY (asteroid_id) REFERENCES asteroids (id) ON DELETE CASCADE
+    CONSTRAINT unique_approach UNIQUE (asteroid_id, approach_date)
 );
+
+-- Funzione per gestire l'inserimento dell'asteroide e restituire l'ID
+CREATE OR REPLACE FUNCTION save_asteroid(p_des VARCHAR, p_h REAL)
+RETURNS INTEGER AS $$
+DECLARE
+    v_id INTEGER;
+BEGIN
+    INSERT INTO asteroids (designation, absolute_magnitude)
+    VALUES (p_des, p_h)
+    ON CONFLICT (designation)
+    DO UPDATE SET absolute_magnitude = EXCLUDED.absolute_magnitude
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Funzione per gestire l'inserimento dei Passaggi
+CREATE OR REPLACE FUNCTION save_approach(
+    p_asteroid_id INTEGER, 
+    p_date TIMESTAMP, 
+    p_dist REAL, 
+    p_vel REAL
+) RETURNS VOID AS $$
+BEGIN
+    INSERT INTO close_approaches (asteroid_id, approach_date, distance_au, velocity_km_s)
+    VALUES (p_asteroid_id, p_date, p_dist, p_vel)
+    ON CONFLICT ON CONSTRAINT unique_approach DO NOTHING;
+END;
+$$ LANGUAGE plpgsql;
