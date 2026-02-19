@@ -1,0 +1,8 @@
+# Docker & Postgres
+pgdata/
+
+# Segreti (Obbligatorio!)
+.env
+
+# Sistema operativo
+.DS_Store
