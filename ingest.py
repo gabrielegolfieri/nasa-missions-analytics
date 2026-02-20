@@ -1,22 +1,14 @@
-import os
 import requests
-import psycopg2
-from dotenv import load_dotenv
 
-load_dotenv()
-DB_CONFIG = {
-    "host": "localhost",
-    "database": os.getenv("POSTGRES_DB"),
-    "user": os.getenv("POSTGRES_USER"),
-    "password": os.getenv("POSTGRES_PASSWORD")
-}
+from database import get_connection
+
 NASA_URL = "https://ssd-api.jpl.nasa.gov/cad.api"
 
 def main():
     try:
         # Recupero dati dalla NASA
         print("Recupero dati dalla NASA (con API Key)...")
-        params = {"dist-max": "0.05","limit": "50"} # Limitiamo a 50 eventi per evitare sovraccarichi
+        params = {"dist-max": "0.05","limit": "50"} # Limitiamo a 50 eventi per evitare sovraccarichi (per ora)
         response = requests.get(NASA_URL, params=params)
         response.raise_for_status()
         payload = response.json()
@@ -24,7 +16,7 @@ def main():
         # Inserimento dati nel database
         rows = payload.get('data', []) # Indici: des=0, cd=3, dist=4, v_rel=7, h=10
         
-        connection = psycopg2.connect(**DB_CONFIG)
+        connection = get_connection()
         cursor = connection.cursor()
         
         print(f"Trovati {len(rows)} eventi. Inserimento nel database...")
@@ -37,9 +29,7 @@ def main():
             h = row[10]    # Magnitudine (grandezza)
 
             cursor.execute("SELECT save_asteroid(%s, %s);", (des, h)) # Tabella 1: ASTEROIDS
-            
-            asteroid_id = cursor.fetchone()[0]
-
+            asteroid_id = cursor.fetchone()[0] # Recupera l'ID dell'asteroide appena inserito
             cursor.execute("SELECT save_approach(%s, %s, %s, %s);", (asteroid_id, cd, dist, v_rel)) # Tabella 2: CLOSE_APPROACHES
 
         # Salvataggio delle modifiche
