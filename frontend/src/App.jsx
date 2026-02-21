@@ -115,7 +115,7 @@ function App() {
 
       {/* HEADER */}
       <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2><Rocket /> NASA Mission Analytics</h2>
+        <h2><Rocket /> NASA Near-Earth Object Analytics</h2>
         <button
           onClick={handleRefresh}
           disabled={loading}
@@ -140,7 +140,7 @@ function App() {
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
           <input
             type="text"
-            placeholder="Filtra per nome (es. 2024 BX)..."
+            placeholder="Filtra per nome (es. 2024 OU)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ padding: '8px 12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', borderRadius: '4px', minWidth: '250px' }}
