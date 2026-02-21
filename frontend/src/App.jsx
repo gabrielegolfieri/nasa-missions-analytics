@@ -4,15 +4,16 @@ import { RefreshCw, Rocket, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } 
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 function App() {
-  // --- STATI ---
+  // --- 1. STATI ---
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: 'approach_date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [minDate, setMinDate] = useState("");
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // --- CHIAMATE API ---
+  // --- 2. CHIAMATE API ---
   const fetchData = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/data');
@@ -22,43 +23,43 @@ function App() {
     }
   };
 
-  // --- AGGIORNAMENTO DATI ---
   const handleRefresh = async () => {
     setLoading(true);
     try {
       await axios.post('http://localhost:8000/api/refresh');
-
+      // Attendiamo che il backend Python finisca l'ingestione
       setTimeout(async () => {
         await fetchData();
         setLoading(false);
         alert("Database aggiornato con i dati NASA!");
       }, 20000);
-
     } catch (error) {
       console.error("Errore durante l'aggiornamento:", error);
       setLoading(false);
     }
   };
 
-  // --- EFFETTI ---
+  // --- 3. EFFETTI ---
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+    setCurrentPage(1); // Reset pagina se cambia la ricerca
+  }, [searchTerm, minDate]); // Aggiunto minDate per resettare anche al cambio data
 
-  // --- LOGICA DI FILTRAGGIO E ORDINAMENTO ---
+  // --- 4. LOGICA DATI (Filtri, Ordinamento, Paginazione) ---
   const filteredData = useMemo(() => {
-    return data.filter(item =>
-      item.designation.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [data, searchTerm]);
+    return data.filter(item => {
+      const matchesName = item.designation.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDate = !minDate || new Date(item.approach_date) >= new Date(minDate);
+      return matchesName && matchesDate;
+    });
+  }, [data, searchTerm, minDate]);
 
   const sortedData = useMemo(() => {
     let sortableItems = [...filteredData];
-    if (sortConfig !== null) {
+    if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
         if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
@@ -68,10 +69,15 @@ function App() {
     return sortableItems;
   }, [filteredData, sortConfig]);
 
-  // --- LOGICA DI PAGINAZIONE ---
+  // Unica logica di paginazione ottimizzata
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  const currentItems = sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  
+  const currentItems = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * itemsPerPage;
+    return sortedData.slice(firstPageIndex, firstPageIndex + itemsPerPage);
+  }, [currentPage, sortedData, itemsPerPage]);
 
+  // Funzioni di supporto tabella
   const requestSort = (key) => {
     let direction = 'desc';
     if (sortConfig.key === key && sortConfig.direction === 'desc') direction = 'asc';
@@ -83,7 +89,7 @@ function App() {
     return sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
   };
 
-  // --- PREPARAZIONE DATI GRAFICI ---
+  // --- 5. PREPARAZIONE DATI GRAFICI ---
   const dangerData = useMemo(() => {
     const dangerous = filteredData.filter(item => parseFloat(item.distance_au) <= 0.05).length;
     const safe = filteredData.length - dangerous;
@@ -103,37 +109,73 @@ function App() {
       }));
   }, [filteredData]);
 
-  // --- RENDER ---
+  // --- 6. RENDER UI ---
   return (
     <div style={{ padding: '20px', backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', fontFamily: 'monospace' }}>
 
+      {/* HEADER */}
       <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h2><Rocket /> NASA Mission Analytics</h2>
         <button
           onClick={handleRefresh}
           disabled={loading}
-          style={{ cursor: loading ? 'not-allowed' : 'pointer', padding: '8px 15px', display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ 
+            cursor: loading ? 'not-allowed' : 'pointer', 
+            padding: '8px 15px', display: 'flex', alignItems: 'center', gap: '8px',
+            backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px'
+          }}
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          {loading ? 'Scarico dati dalla NASA...' : 'Aggiorna Dati NASA'}
+          {loading ? 'Scarico dati...' : 'Aggiorna Dati NASA'}
         </button>
       </header>
 
-      {/* SEZIONE FILTRO */}
-      <div style={{ marginBottom: '15px' }}>
-        <input
-          type="text"
-          placeholder="Filtra per nome..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            padding: '10px', width: '100%', maxWidth: '400px',
-            backgroundColor: '#1e293b', color: 'white', border: '1px solid #334155', borderRadius: '4px'
-          }}
-        />
+      {/* BARRA CONTROLLI (Filtri + Paginazione) */}
+      <div style={{ 
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap',
+        gap: '20px', marginBottom: '20px', padding: '15px',
+        backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155'
+      }}>
+        {/* Gruppo Sinistro */}
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            placeholder="Filtra per nome (es. 2024 BX)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ padding: '8px 12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', borderRadius: '4px', minWidth: '250px' }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '13px', color: '#94a3b8' }}>Dal:</span>
+            <input
+              type="date"
+              value={minDate}
+              onChange={(e) => setMinDate(e.target.value)}
+              style={{ padding: '6px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', borderRadius: '4px' }}
+            />
+          </div>
+        </div>
+
+        {/* Gruppo Destro */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '13px', color: '#94a3b8' }}>Mostra:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            style={{ padding: '6px 10px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            <option value={10}>10 righe</option>
+            <option value={25}>25 righe</option>
+            <option value={50}>50 righe</option>
+            <option value={100}>100 righe</option>
+          </select>
+        </div>
       </div>
 
-      {/* SEZIONE GRAFICI */}
+      {/* GRAFICI */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
         <div style={{ backgroundColor: '#1e293b', padding: '15px', borderRadius: '8px', height: '300px' }}>
           <h3 style={{ fontSize: '14px', marginBottom: '10px' }}>Livello di Allerta (0.05 AU Threshold)</h3>
@@ -161,7 +203,7 @@ function App() {
         </div>
       </div>
 
-      {/* SEZIONE TABELLA */}
+      {/* TABELLA */}
       <div style={{ backgroundColor: '#1e293b', borderRadius: '4px', overflow: 'hidden', border: '1px solid #334155' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
@@ -192,10 +234,23 @@ function App() {
         </table>
       </div>
 
-      <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
-        <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft /></button>
-        <span>Pagina {currentPage} di {totalPages || 1}</span>
-        <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight /></button>
+      {/* CONTROLLI PAGINAZIONE FONDO PAGINA */}
+      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+        <button 
+          disabled={currentPage === 1} 
+          onClick={() => setCurrentPage(p => p - 1)}
+          style={{ padding: '5px', backgroundColor: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+        >
+          <ChevronLeft />
+        </button>
+        <span style={{ fontSize: '14px' }}>Pagina {currentPage} di {totalPages || 1}</span>
+        <button 
+          disabled={currentPage === totalPages || totalPages === 0} 
+          onClick={() => setCurrentPage(p => p + 1)}
+          style={{ padding: '5px', backgroundColor: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer' }}
+        >
+          <ChevronRight />
+        </button>
       </div>
 
     </div>
