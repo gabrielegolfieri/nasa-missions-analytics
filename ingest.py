@@ -8,8 +8,17 @@ def main():
     try:
         # Recupero dati dalla NASA
         print("Recupero dati dalla NASA (con API Key)...")
-        params = {"dist-max": "0.05","limit": "50"} # Limitiamo a 50 eventi per evitare sovraccarichi (per ora)
+        #params = {"dist-max": "0.05","limit": "50"} # Limitiamo a 50 eventi per evitare sovraccarichi (per ora)
+        # In ingest.py, prova a espandere la ricerca:
+        params = {
+    "dist-max": "0.2",          # Aumentiamo la distanza a 0.2 AU (molti più oggetti)
+    "date-min": "2023-01-01",   # Prendiamo dati a partire dall'anno scorso
+    "date-max": "2027-01-01",   # Guardiamo anche nel futuro prossimo
+    "h-max": "25",              # Includiamo anche asteroidi più piccoli (magnitudine assoluta)
+    "limit": "1000"
+        }
         response = requests.get(NASA_URL, params=params)
+        #response = requests.get(NASA_URL)
         response.raise_for_status()
         payload = response.json()
         
@@ -28,9 +37,9 @@ def main():
             v_rel = row[7] # Velocità
             h = row[10]    # Magnitudine (grandezza)
 
-            cursor.execute("SELECT save_asteroid(%s, %s);", (des, h)) # Tabella 1: ASTEROIDS
+            cursor.execute("SELECT save_asteroid(%s, %s);", (str(des), float(h))) # Tabella 1: ASTEROIDS
             asteroid_id = cursor.fetchone()[0] # Recupera l'ID dell'asteroide appena inserito
-            cursor.execute("SELECT save_approach(%s, %s, %s, %s);", (asteroid_id, cd, dist, v_rel)) # Tabella 2: CLOSE_APPROACHES
+            cursor.execute("SELECT save_approach(%s, %s, %s, %s);", (asteroid_id, cd, float(dist), float(v_rel))) # Tabella 2: CLOSE_APPROACHES
 
         # Salvataggio delle modifiche
         connection.commit()
