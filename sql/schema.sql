@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS asteroids (
 -- Tabella 2: Eventi di Avvicinamento (Close Approaches)
 -- Contiene i dati di ogni singolo passaggio vicino alla Terra
 CREATE TABLE IF NOT EXISTS close_approaches (
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,                   -- ID auto-incrementante
     asteroid_id INTEGER NOT NULL,            -- Chiave Esterna che punta alla tabella asteroids
     approach_date TIMESTAMP NOT NULL,        -- Corrisponde al campo NASA 'cd'
     distance_au REAL NOT NULL,               -- Corrisponde al campo NASA 'dist'
@@ -37,18 +37,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Funzione per gestire l'inserimento dei Passaggi
--- In schema.sql, modifica la funzione save_approach
-CREATE OR REPLACE FUNCTION save_approach(p_desig TEXT, p_date TIMESTAMP, p_dist NUMERIC, p_vel NUMERIC)
+CREATE OR REPLACE FUNCTION save_approach(p_desig INTEGER, p_date TIMESTAMP, p_dist NUMERIC, p_vel NUMERIC)
 RETURNS VOID AS $$
 DECLARE v_ast_id INT;
 BEGIN
-    -- Cerchiamo l'ID dell'asteroide
-    SELECT id INTO v_ast_id FROM asteroids WHERE designation = p_desig;
+    SELECT id INTO v_ast_id FROM asteroids WHERE id = p_desig;
     
     IF v_ast_id IS NOT NULL THEN
         INSERT INTO close_approaches (asteroid_id, approach_date, distance_au, velocity_km_s)
         VALUES (v_ast_id, p_date, p_dist, p_vel)
-        -- SE ESISTE GIÀ, AGGIORNA I DATI CAMBIATI
         ON CONFLICT (asteroid_id, approach_date) 
         DO UPDATE SET 
             distance_au = EXCLUDED.distance_au,
