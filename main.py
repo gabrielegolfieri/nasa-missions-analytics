@@ -7,10 +7,12 @@ from database import get_connection
 
 app = FastAPI()
 
-# Permette a React di comunicare con questo server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://nasa-missions-analytics-frontend.onrender.com",
+        "http://localhost:5173"  # per sviluppo locale
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -12,11 +12,12 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [minDate, setMinDate] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   // --- 2. CHIAMATE API ---
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/data');
+      const response = await axios.get(`${API_URL}/api/data`);
       setData(response.data);
     } catch (error) {
       console.error("Errore nel recupero dati:", error);
@@ -26,8 +27,7 @@ function App() {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:8000/api/refresh');
-      // Attendiamo che il backend Python finisca l'ingestione
+      await axios.post(`${API_URL}/api/refresh`);
       setTimeout(async () => {
         await fetchData();
         setLoading(false);
