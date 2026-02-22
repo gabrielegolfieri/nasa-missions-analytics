@@ -24,9 +24,6 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-@app.get("/")
-def read_root():
-    return {"status": "NASA API is running!"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +31,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def read_root():
+    return {"status": "NASA API is running!"}
 
 @app.get("/api/data")
 def get_dashboard_data():
