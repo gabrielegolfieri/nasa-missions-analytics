@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { RefreshCw, Rocket, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RefreshCw, Rocket, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 function App() {
@@ -71,7 +71,7 @@ function App() {
 
   // Unica logica di paginazione ottimizzata
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  
+
   const currentItems = useMemo(() => {
     const firstPageIndex = (currentPage - 1) * itemsPerPage;
     return sortedData.slice(firstPageIndex, firstPageIndex + itemsPerPage);
@@ -119,8 +119,8 @@ function App() {
         <button
           onClick={handleRefresh}
           disabled={loading}
-          style={{ 
-            cursor: loading ? 'not-allowed' : 'pointer', 
+          style={{
+            cursor: loading ? 'not-allowed' : 'pointer',
             padding: '8px 15px', display: 'flex', alignItems: 'center', gap: '8px',
             backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px'
           }}
@@ -130,13 +130,12 @@ function App() {
         </button>
       </header>
 
-      {/* BARRA CONTROLLI (Filtri + Paginazione) */}
-      <div style={{ 
+      {/* BARRA CONTROLLI */}
+      <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap',
         gap: '20px', marginBottom: '20px', padding: '15px',
         backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155'
       }}>
-        {/* Gruppo Sinistro */}
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
           <input
             type="text"
@@ -156,7 +155,6 @@ function App() {
           </div>
         </div>
 
-        {/* Gruppo Destro */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '13px', color: '#94a3b8' }}>Mostra:</span>
           <select
@@ -236,20 +234,34 @@ function App() {
 
       {/* CONTROLLI PAGINAZIONE FONDO PAGINA */}
       <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
-        <button 
-          disabled={currentPage === 1} 
+        <button
+          onClick={() => setCurrentPage(1)}
+          disabled={currentPage === 1}
+          style={{ padding: '5px', backgroundColor: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+        >
+          <ChevronsLeft />
+        </button>
+        <button
+          disabled={currentPage === 1}
           onClick={() => setCurrentPage(p => p - 1)}
           style={{ padding: '5px', backgroundColor: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
         >
           <ChevronLeft />
         </button>
         <span style={{ fontSize: '14px' }}>Pagina {currentPage} di {totalPages || 1}</span>
-        <button 
-          disabled={currentPage === totalPages || totalPages === 0} 
+        <button
+          disabled={currentPage === totalPages || totalPages === 0}
           onClick={() => setCurrentPage(p => p + 1)}
           style={{ padding: '5px', backgroundColor: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer' }}
         >
           <ChevronRight />
+        </button>
+        <button
+          onClick={() => setCurrentPage(totalPages)}
+          disabled={currentPage === totalPages || totalPages === 0}
+          style={{ padding: '5px', backgroundColor: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer' }}
+        >
+          <ChevronsRight />
         </button>
       </div>
 
