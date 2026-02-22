@@ -1,9 +1,10 @@
 # NASA Near-Earth Object Analytics Dashboard
 
-Una piattaforma per il monitoraggio, l'ingestione e l'analisi visiva degli asteroidi in avvicinamento alla Terra, basata sui dati ufficiali della NASA.
+**[🔗 VAI ALLA DASHBOARD (Render)](https://nasa-missions-analytics-frontend.onrender.com/)**
 
-## Anteprima della Dashboard
-![Dashboard Principale](dashboard.png)
+> **Nota tecnica sul Deploy Cloud:** Il backend e il database di questo progetto sono ospitati sul piano gratuito di **Render**. In caso di inattività prolungata, il server entra in modalità standby. Al primo accesso, l'API potrebbe richiedere circa 50 secondi per "svegliarsi" e caricare i dati. Le richieste successive saranno istantanee.
+
+Una piattaforma per il monitoraggio, l'ingestione e l'analisi visiva degli asteroidi in avvicinamento alla Terra, basata sui dati ufficiali della NASA.
 
 ---
 
@@ -18,26 +19,17 @@ Una piattaforma per il monitoraggio, l'ingestione e l'analisi visiva degli aster
   * Filtro temporale interattivo per escludere eventi passati.
   * Paginazione personalizzabile e ordinamento multi-colonna.
   * Formattazione condizionale (rosso/verde) per evidenziare immediatamente i fattori di rischio spaziale.
-* **Data Pipeline Resiliente**: Script Python dedicato (`ingest.py`) per il download massivo dei dati NASA (fino a 5000 record storici e futuri).
+* **Data Pipeline Resiliente**: Il backend esegue un controllo all'avvio: se il database è vuoto, innesca automaticamente uno script Python (`ingest.py`) per il download massivo dei dati NASA (fino a 5000 record storici e futuri)
 
 ---
 
 ## Stack Tecnologico
 
-**Frontend:**
-* React.js (Vite)
-* Recharts (Data Visualization)
-* Lucide-React (Iconografia)
-* CSS inline per un tema scuro moderno (Tailwind-like)
+L'infrastruttura è completamente deploata su **Render.com**, garantendo la persistenza dei dati e l'accessibilità via web:
 
-**Backend & Data Pipeline:**
-* Python 3
-* Libreria `requests` (Integrazione API REST NASA)
-* FastAPI (Endpoint per esporre i dati al frontend e triggerare il refresh)
-
-**Database:**
-* PostgreSQL (Hostato via Docker)
-* Funzioni PL/pgSQL (`save_asteroid`, `save_approach`) per la validazione e l'inserimento relazionale dei dati.
+* **Frontend**: React.js (Vite), Recharts per la data visualization, Lucide-React per l'iconografia.
+* **Backend**: Python 3, FastAPI, Psycopg2.
+* **Database**: PostgreSQL.
 
 ---
 
@@ -48,55 +40,36 @@ Il database è progettato per garantire efficienza e assenza di duplicati:
 
 ---
 
-## Guida all'Avvio (Local Environment)
+## Guida all'Avvio (Sviluppo Locale)
 
-Seguire questi passaggi per avviare l'intero stack sul proprio computer locale.
+Se si desidera clonare il repository ed eseguire l'applicazione sul proprio ambiente locale:
 
 ### Prerequisiti
-* **Docker** e **Docker Compose** installati (per il database).
-* **Python 3.10+** installato.
-* **Node.js** e **npm** installati (per il frontend).
+* Docker e Docker Compose (per il DB locale)
+* Python 3.10+
+* Node.js e npm
 
-### 1. Avvia il Database (PostgreSQL)
-Aprire il terminale nella cartella principale del progetto e lanciare il container Docker:
-
-```bash
-docker-compose up -d
+### 1. Database & Backend
 ```
-(Nota: assicurarsi che il file `.env` sia configurato correttamente con le credenziali del database).
+# Avviare PostgreSQL tramite Docker
+docker compose up -d
+```
 
-### 2. Configura e Avvia il Backend (Python / FastAPI)
-Aprire un nuovo terminale, assicurarsi di essere nella cartella del backend e configurare l'ambiente Python:
-
-```bash
-# 1. Creazione e attivazione dell'ambiente virtuale
-python3 -m venv .venv
-
-# Su Windows usare: 
-.venv\Scripts\activate
-# Su Mac/Linux usare: 
-source .venv/bin/activate
-
-# 2. Installazione delle dipendenze necessarie
+#### Configurare l'ambiente Python
+```
+python -m venv .venv
+source .venv/bin/activate # (Su Windows: .venv\Scripts\activate)
 pip install -r requirements.txt
+```
 
-# 3. Popolazione del database con i dati NASA
-python3 ingest.py
-
-# 4. Avviamento del server backend FastAPI
+#### Avviare il server FastAPI (il DB si popolerà da solo all'avvio)
+```
 uvicorn main:app --reload
 ```
-(Il backend sarà ora in ascolto sulla porta `http://localhost:8000`).
 
-### 3. Avvia la Dashboard (Frontend React)
-Aprire un terzo terminale, spostarsi nella cartella del frontend e avviare l'interfaccia utente:
-
-```bash
-# Installazione dei pacchetti Node
+### 2. Frontend
+In un nuovo terminale, nella cartella del frontend:
+```
 npm install
-
-# Avviamento del server di sviluppo Vite
 npm run dev
 ```
-
-Ora basterà cliccare sul link generato nel terminale (solitamente `http://localhost:5173`) per esplorare la Dashboard completa.

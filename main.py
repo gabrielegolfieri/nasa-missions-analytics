@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from psycopg2.extras import RealDictCursor
@@ -5,14 +7,30 @@ from psycopg2.extras import RealDictCursor
 import ingest
 from database import get_connection
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM asteroids")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    connection.close()
+
+    if count == 0:
+        print("Database vuoto, avvio ingest automatico...")
+        await asyncio.to_thread(ingest.main)
+        print("Ingest completato!")
+
+    yield
+
+app = FastAPI(lifespan=lifespan)
+@app.get("/")
+def read_root():
+    return {"status": "NASA API is running!"}
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://nasa-missions-analytics-frontend.onrender.com",
-        "http://localhost:5173"  # per sviluppo locale
-    ],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -20,7 +38,7 @@ app.add_middleware(
 @app.get("/api/data")
 def get_dashboard_data():
     connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor) # Restituisce JSON pulito
+    cursor = connection.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT a.designation, a.absolute_magnitude, c.approach_date, c.distance_au, c.velocity_km_s
         FROM asteroids a
@@ -35,6 +53,5 @@ def get_dashboard_data():
 
 @app.post("/api/refresh")
 async def refresh_data(background_tasks: BackgroundTasks):
-    # Lancia l'ingestione in background per non bloccare la dashboard
     background_tasks.add_task(ingest.main)
     return {"message": "Aggiornamento dati avviato!"}
