@@ -25,7 +25,7 @@ function App() {
 
   // --- 2. CHIAMATE API & EFFETTI ---
   const fetchData = async () => {
-    try { setData((await axios.get(`${API_URL}/api/data`)).data); } 
+    try { setData((await axios.get(`${API_URL}/api/data`)).data); }
     catch (e) { console.error("Errore recupero dati:", e); }
   };
 
@@ -41,8 +41,8 @@ function App() {
   useEffect(() => { setPage(1); }, [search, minDate]);
 
   // --- 3. LOGICA TABELLA E DATI ---
-  const filtered = useMemo(() => data.filter(i => 
-    i.designation.toLowerCase().includes(search.toLowerCase()) && 
+  const filtered = useMemo(() => data.filter(i =>
+    i.designation.toLowerCase().includes(search.toLowerCase()) &&
     (!minDate || new Date(i.approach_date) >= new Date(minDate))
   ), [data, search, minDate]);
 
@@ -78,7 +78,7 @@ function App() {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload, isPie = type === 'pie';
     const c = isPie ? d.color : (d.isDanger ? '#ff4d4d' : type === 'bar' ? '#60a5fa' : '#4ade80');
-    
+
     return (
       <div style={{ background: 'rgba(15,23,42,0.85)', padding: '12px', borderRadius: '8px', border: '1px solid #334155', backdropFilter: 'blur(4px)' }}>
         <p style={{ margin: isPie ? 0 : '0 0 5px 0', fontWeight: 'bold', color: c }}>
@@ -130,9 +130,19 @@ function App() {
   // --- 7. UI PRINCIPALE ---
   return (
     <div style={{ padding: '20px', backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', fontFamily: 'monospace' }}>
-      
+
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}><Rocket /> NASA NEO Analytics</h2>
+
+        <h2 style={{display: 'flex', alignItems: 'center', gap: '12px', margin: 0,fontSize: '1.75rem', fontWeight: '800', letterSpacing: '-0.5px', color: '#ffffff'}}>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', background: 'rgba(59, 130, 246, 0.15)', borderRadius: '12px', color: '#3b82f6', boxShadow: '0 0 15px rgba(59, 130, 246, 0.2)'}}>
+            <Rocket size={26} strokeWidth={2.5} />
+          </div>
+          <span>NASA{' '}
+            <span style={{background: 'linear-gradient(to right, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: 'transparent'}}>Near-Earth Object</span>
+            {' '}Analytics
+          </span>
+        </h2>
+
         <button onClick={handleRefresh} disabled={loading} style={{ ...s.btn, backgroundColor: '#3b82f6', fontWeight: 'bold', display: 'flex', gap: '8px', alignItems: 'center' }}>
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> {loading ? 'Scarico dati...' : 'Aggiorna Dati NASA'}
         </button>
@@ -142,7 +152,7 @@ function App() {
 
       <div>
         <h3 style={{ fontSize: '18px', margin: '0 0 15px', paddingBottom: '10px', borderBottom: '1px solid #334155' }}>Esplora Dati Dettagliati</h3>
-        
+
         <div style={{ ...s.box, display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', marginBottom: '20px' }}>
           <div style={{ display: 'flex', gap: '15px', flex: 1, flexWrap: 'wrap' }}>
             <input type="text" placeholder="Filtra per nome (es. 2024)..." value={search} onChange={e => setSearch(e.target.value)} style={{ ...s.input, minWidth: '250px' }} />
@@ -160,7 +170,7 @@ function App() {
         <div style={{ ...s.box, padding: 0, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead style={{ backgroundColor: '#334155' }}><tr>
-              {[{k:'designation', l:'Designazione'}, {k:'approach_date', l:'Data'}, {k:'distance_au', l:'Distanza (AU)'}, {k:'velocity_km_s', l:'Velocità (km/s)'}].map(c => (
+              {[{ k: 'designation', l: 'Designazione' }, { k: 'approach_date', l: 'Data' }, { k: 'distance_au', l: 'Distanza (AU)' }, { k: 'velocity_km_s', l: 'Velocità (km/s)' }].map(c => (
                 <th key={c.k} onClick={() => reqSort(c.k)} style={s.th}>{c.l} <SortIcon k={c.k} /></th>
               ))}
             </tr></thead>
