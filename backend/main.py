@@ -4,7 +4,7 @@ from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from psycopg2.extras import RealDictCursor
 
-import ingest
+import ingest as ingest
 from database import get_connection
 
 @asynccontextmanager

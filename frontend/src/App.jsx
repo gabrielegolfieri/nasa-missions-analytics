@@ -3,7 +3,7 @@ import axios from 'axios';
 import { RefreshCw, Rocket, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ScatterChart, Scatter, ZAxis, ReferenceDot } from 'recharts';
 
-// --- STILI GLOBALI (DRY) ---
+// --- STILI GLOBALI ---
 const s = {
   box: { backgroundColor: '#1e293b', padding: '15px', borderRadius: '8px', border: '1px solid #334155' },
   input: { padding: '8px 12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', borderRadius: '4px' },
@@ -13,7 +13,7 @@ const s = {
 };
 
 function App() {
-  // --- 1. STATI ---
+  // --- STATI ---
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -23,7 +23,7 @@ function App() {
   const [limit, setLimit] = useState(10);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-  // --- 2. CHIAMATE API & EFFETTI ---
+  // --- CHIAMATE API E EFFETTI ---
   const fetchData = async () => {
     try { setData((await axios.get(`${API_URL}/api/data`)).data); }
     catch (e) { console.error("Errore recupero dati:", e); }
@@ -40,7 +40,7 @@ function App() {
   useEffect(() => { fetchData(); }, []);
   useEffect(() => { setPage(1); }, [search, minDate]);
 
-  // --- 3. LOGICA TABELLA E DATI ---
+  // --- LOGICA TABELLA E DATI ---
   const filtered = useMemo(() => data.filter(i =>
     i.designation.toLowerCase().includes(search.toLowerCase()) &&
     (!minDate || new Date(i.approach_date) >= new Date(minDate))
@@ -57,7 +57,7 @@ function App() {
   const reqSort = k => setSort({ key: k, dir: sort.key === k && sort.dir === 'desc' ? 'asc' : 'desc' });
   const SortIcon = ({ k }) => sort.key !== k ? null : sort.dir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
 
-  // --- 4. PREPARAZIONE GRAFICI ---
+  // --- PREPARAZIONE GRAFICI ---
   const dangerCount = data.filter(i => parseFloat(i.distance_au) <= 0.05).length;
   const dangerData = useMemo(() => [
     { name: 'Pericolosi (< 0.05 AU)', value: dangerCount, color: '#ef4444' },
@@ -73,7 +73,7 @@ function App() {
     return { name: i.designation, distanza: d, x: d * Math.cos(ang), y: d * Math.sin(ang), isDanger: d <= 0.05 };
   }), [data]);
 
-  // --- 5. COMPONENTI RIUTILIZZABILI ---
+  // --- COMPONENTI RIUTILIZZABILI ---
   const SharedTooltip = ({ active, payload, type }) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload, isPie = type === 'pie';
@@ -95,7 +95,7 @@ function App() {
     </button>
   );
 
-  // --- 6. RENDER GRAFICI MEMOIZZATI ---
+  // --- RENDER GRAFICI MEMOIZZATI ---
   const charts = useMemo(() => (
     <div style={{ display: 'grid', gap: '20px', marginBottom: '40px' }}>
       <div style={{ ...s.box, height: '300px' }}>
@@ -127,7 +127,7 @@ function App() {
     </div>
   ), [univData, dangerData, proxData]);
 
-  // --- 7. UI PRINCIPALE ---
+  // --- INTERFACCIA PRINCIPALE ---
   return (
     <div style={{ padding: '20px', backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', fontFamily: 'monospace' }}>
 

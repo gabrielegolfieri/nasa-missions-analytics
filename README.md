@@ -2,8 +2,6 @@
 
 **[🔗 VAI ALLA DASHBOARD (Render)](https://nasa-missions-analytics-frontend.onrender.com/)**
 
-> **Nota tecnica sul Deploy Cloud:** Il backend e il database di questo progetto sono ospitati sul piano gratuito di **Render**. In caso di inattività prolungata, il server entra in modalità standby. Al primo accesso, l'API potrebbe richiedere circa 50 secondi per "svegliarsi" e caricare i dati. Le richieste successive saranno istantanee.
-
 Una piattaforma per il monitoraggio, l'ingestione e l'analisi visiva degli asteroidi in avvicinamento alla Terra, basata sui dati ufficiali della NASA.
 
 ---
@@ -51,7 +49,9 @@ Se si desidera clonare il repository ed eseguire l'applicazione sul proprio ambi
 * Node.js e npm
 
 ### 1. Database & Backend
+Aprire un terminale ed entrare nella cartella del backend:
 ```
+cd backend/
 # Avviare PostgreSQL tramite Docker
 docker compose up -d
 ```
@@ -69,8 +69,9 @@ uvicorn main:app --reload
 ```
 
 ### 2. Frontend
-In un nuovo terminale, nella cartella del frontend:
+In un nuovo terminale, entrare nella cartella del frontend:
 ```
+cd frontend/
 npm install
 npm run dev
 ```
