@@ -127,7 +127,7 @@ function App() {
     </div>
   ), [univData, dangerData, proxData]);
 
-  // --- INTERFACCIA PRINCIPALE ---
+  // --- UI PRINCIPALE ---
   return (
     <div style={{ padding: '20px', backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', fontFamily: 'monospace' }}>
 

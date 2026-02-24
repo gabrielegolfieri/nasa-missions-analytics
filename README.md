@@ -1,6 +1,6 @@
 # NASA Near-Earth Object Analytics Dashboard
 
-**[🔗 VAI ALLA DASHBOARD (Render)](https://nasa-missions-analytics-frontend.onrender.com/)**
+**[VAI ALLA DASHBOARD](https://nasa-missions-analytics-frontend.onrender.com/)**
 
 Una piattaforma per il monitoraggio, l'ingestione e l'analisi visiva degli asteroidi in avvicinamento alla Terra, basata sui dati ufficiali della NASA.
 
